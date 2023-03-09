@@ -24,6 +24,7 @@ public class Predictor {
     protected PaddlePredictor VOCPredictor = null;
     protected float inferenceTime = 0;
     protected float[] wav;
+    protected float maxwav= (float) 0.01;
     Object obj=new Object();
     int sleeptime=0;
 
@@ -113,9 +114,17 @@ public class Predictor {
         }
         wav=new float[count];
         int index=0;
+        float value=0;
         for(float[] ft : list){
             for (int i=0;i<ft.length;i++)
             {
+                value=ft[i];
+                if (value< 0) {
+                    value = -1 * value;
+                }
+                if (value > maxwav) {
+                    maxwav = value;
+                }
                 wav[index]=ft[i];
                 index++;
             }

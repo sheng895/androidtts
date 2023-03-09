@@ -7,7 +7,7 @@ import android.os.Environment;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -71,14 +71,15 @@ public class Utils {
         return Environment.getExternalStorageDirectory().getAbsolutePath();
     }
 
-    public static void rawToWave(String file, float[] data, int samplerate) throws IOException {
+    public static ByteArrayOutputStream rawToByte(float[] data, float mmax,int samplerate) throws IOException {
         // creating the empty wav file.
-        File waveFile = new File(file);
-        waveFile.createNewFile();
+//        File waveFile = new File(file);
+//        waveFile.createNewFile();
+        ByteArrayOutputStream output = new ByteArrayOutputStream(100+data.length);
         //following block is converting raw to wav.
-        DataOutputStream output = null;
+//        DataOutputStream output = null;
         try {
-            output = new DataOutputStream(new FileOutputStream(waveFile));
+//            output = new DataOutputStream(new FileOutputStream(waveFile));
             // WAVE header
             // chunk id
             writeString(output, "RIFF");
@@ -106,44 +107,42 @@ public class Utils {
             writeString(output, "data");
             // subchunk 2 size
             writeInt(output, data.length * 2);
-            short[] short_data = FloatArray2ShortArray(data);
-            for (int i = 0; i < short_data.length; i++) {
-                writeShort(output, short_data[i]);
+
+            for (int i = 0; i < data.length; i++) {
+                writeShort(output, (short) (data[i] * (32767 / mmax)));
             }
+//            short[] short_data = FloatArray2ShortArray(data,mmax);
+//            for (int i = 0; i < short_data.length; i++) {
+//                writeShort(output, short_data[i]);
+//            }
         } finally {
             if (output != null) {
                 output.close();
             }
         }
+        return output;
     }
 
-    private static void writeInt(final DataOutputStream output, final int value) throws IOException {
+    private static void writeInt(final ByteArrayOutputStream output, final int value) throws IOException {
         output.write(value);
         output.write(value >> 8);
         output.write(value >> 16);
         output.write(value >> 24);
     }
 
-    private static void writeShort(final DataOutputStream output, final short value) throws IOException {
+    private static void writeShort(final ByteArrayOutputStream output, final short value) throws IOException {
         output.write(value);
         output.write(value >> 8);
     }
 
-    private static void writeString(final DataOutputStream output, final String value) throws IOException {
+    private static void writeString(final ByteArrayOutputStream output, final String value) throws IOException {
         for (int i = 0; i < value.length(); i++) {
             output.write(value.charAt(i));
         }
     }
 
-    public static short[] FloatArray2ShortArray(float[] values) {
-        float mmax = (float) 0.01;
+    public static short[] FloatArray2ShortArray(float[] values, float mmax ) {
         short[] ret = new short[values.length];
-
-        for (int i = 0; i < values.length; i++) {
-            if (abs(values[i]) > mmax) {
-                mmax = abs(values[i]);
-            }
-        }
 
         for (int i = 0; i < values.length; i++) {
             values[i] = values[i] * (32767 / mmax);

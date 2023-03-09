@@ -5,6 +5,9 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioTrack;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
@@ -18,6 +21,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -28,11 +32,6 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.gykj.paddle.lite.demo.tts.R;
-import com.huaban.analysis.jieba.JiebaSegmenter;
-
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected int cpuThreadNum = 4;
     protected String cpuPowerMode = "";
     protected Predictor predictor = new Predictor();
-    int sampleRate = 24000;
+    int sampleRate = 12000;
     private final String wavName = "tts_output.wav";
     private final String wavFile = Environment.getExternalStorageDirectory() + File.separator + wavName;
     private final String AMmodelName = "fastspeech2_mix_arm.nb";
@@ -77,6 +76,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private Map<String, String> pinyinmap = new HashMap<>();
     private int[][] phones = {};
+
+    private AudioTrack audioTrack;
+    private byte[] audioData;
+
     private final float[][] sentencesToChoose = {
             // 009901 昨日，这名“伤者”与医生全部被警方依法刑事拘留。
             {261, 231, 175, 116, 179, 262, 44, 154, 126, 177, 19, 262, 42, 241, 72, 177, 56, 174, 245, 37, 186, 37, 49, 151, 127, 69, 19, 179, 72, 69, 4, 260, 126, 177, 116, 151, 239, 153, 141},
@@ -105,20 +108,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_play:
-                if (!mediaPlayer.isPlaying()) {
-                    mediaPlayer.start();
+//                if (!mediaPlayer.isPlaying()) {
+//                    mediaPlayer.start();
+//                }
+                if (audioData.length>0) {
+                    this.audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate,
+                            AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT,
+                            audioData.length, AudioTrack.MODE_STATIC);
+                  if(this.audioTrack.getPlayState()==3)
+                  {
+                      this.audioTrack.stop();
+                      this.audioTrack.release();
+                  }
+                    this.audioTrack.write(audioData, 0, audioData.length);
+                    audioTrack.play();
                 }
                 break;
             case R.id.btn_pause:
-                if (mediaPlayer.isPlaying()) {
-                    mediaPlayer.pause();
-                }
+//                if (mediaPlayer.isPlaying()) {
+//                    mediaPlayer.pause();
+//                }
+                this.onPause();
                 break;
             case R.id.btn_stop:
-                if (mediaPlayer.isPlaying()) {
-                    mediaPlayer.reset();
-                    initMediaPlayer();
-                }
+//                if (mediaPlayer.isPlaying()) {
+//                    mediaPlayer.reset();
+//                    initMediaPlayer();
+//                }
+                this.audioTrack.stop();
                 break;
             default:
                 break;
@@ -131,6 +148,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mediaPlayer.reset();
             // 指定音频文件的路径
             mediaPlayer.setDataSource(file.getPath());
+
 //            mediaPlayer .setLooping(true);
             // 让 MediaPlayer 进入到准备状态
             mediaPlayer.prepare();
@@ -275,6 +293,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        }
 
         CalcMac.init(externalPath);
+
 //        String dssss= CalcMac.getPhoneIds("这几天雨水不断，人们恨不得待在家里不出门。");
 
 //        predictor.init(MainActivity.this, modelPath, AMmodelName, VOCmodelName, cpuThreadNum,
@@ -350,7 +369,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tvInferenceTime.setText("Inference done！\nInference time: " + predictor.inferenceTime() + " ms"
                 + "\nRTF: " + predictor.inferenceTime() * sampleRate / (predictor.wav.length * 1000) + "\nAudio saved in " + wavFile);
         try {
-            Utils.rawToWave(wavFile, predictor.wav, sampleRate);
+//            Utils.rawToWave(wavFile, predictor.wav, sampleRate);
+              audioData= Utils.rawToByte(predictor.wav,predictor.maxwav,sampleRate).toByteArray();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -473,5 +493,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
 
+    }
+
+    private void releaseAudioTrack() {
+        if (this.audioTrack != null) {
+            Log.d(TAG, "Stopping");
+            audioTrack.stop();
+            Log.d(TAG, "Releasing");
+            audioTrack.release();
+            Log.d(TAG, "Nulling");
+        }
+    }
+
+    public void onPause() {
+        super.onPause();
+        this.releaseAudioTrack();
     }
 }
