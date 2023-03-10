@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_play:
-                ttsSpeak(content);
+                ttsSpeak();
 //                this.audioTrack.stop();
 //                this.audioTrack.release();
 
@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private  void ttsSpeak(String text)
+    private  void ttsSpeak()
     {
         new Thread(new Runnable() {
             @Override
