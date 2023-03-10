@@ -23,7 +23,6 @@ public class Predictor {
     protected PaddlePredictor AMPredictor = null;
     protected PaddlePredictor VOCPredictor = null;
     protected float inferenceTime = 0;
-    protected List<float[]> wav;
 
     protected float[] singlewav;
     protected float maxwav=(float) 0.01;
@@ -98,7 +97,6 @@ public class Predictor {
         if (!isLoaded()) {
             return false;
         }
-        Date start = new Date();
         int[] speakid=new int[1];
         speakid[0]=282;
         sleeptime=0;
@@ -115,8 +113,6 @@ public class Predictor {
                 maxwav = value;
             }
         }
-        Date end = new Date();
-        inferenceTime = (end.getTime() - start.getTime());
         return true;
     }
 

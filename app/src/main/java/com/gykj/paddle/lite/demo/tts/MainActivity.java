@@ -35,6 +35,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -70,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final String wavFile = Environment.getExternalStorageDirectory() + File.separator + wavName;
     private final String AMmodelName = "fastspeech2_mix_arm.nb";
     private final String VOCmodelName = "mb_melgan_csmsc_arm.nb";
-//    private final String VOCmodelName = "hifigan_csmsc_arm.nb";
+    //    private final String VOCmodelName = "hifigan_csmsc_arm.nb";
     private Map<String, String> phonemap = new HashMap<>();
 
     private Map<String, String> pinyinmap = new HashMap<>();
@@ -79,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private AudioTrack audioTrack;
     private byte[] audioData;
-    private  Handler handler;
+    private Handler handler;
 
 
     @Override
@@ -109,8 +110,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private  void ttsSpeak()
-    {
+    private void ttsSpeak() {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -130,7 +130,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 audioTrack.write(audioData, 0, audioData.length);
                 audioTrack.play();
-                boolean firstPaly=true;
+                float inferenceTime = 0;
+                long totalLength = 0;
                 for (String str : segmentText) {
                     String codes = CalcMac.getPhoneIds(str);
                     String[] codevioce = codes.split(",");
@@ -141,14 +142,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         index++;
                     }
                     ft[index] = 277;
+                    Date start = new Date();
                     predictor.runSegmentModel(ft);
-                    if(firstPaly){
-                        Message msg = new Message();
-                        msg.obj = "Inference done！\nInference time: " + predictor.inferenceTime() + " ms"
-                                + "\nRTF: " + predictor.inferenceTime() * sampleRate / (predictor.singlewav.length* 1000) ;
-                        handler.sendMessage(msg);  //发
-                        firstPaly=false;
-                    }
+                    Date end = new Date();
+                    inferenceTime += (end.getTime() - start.getTime());
+                    totalLength += predictor.singlewav.length;
                     try {
                         audioData = Utils.segToByte(predictor.singlewav, predictor.maxwav).toByteArray();
                         audioTrack.write(audioData, 0, audioData.length);
@@ -157,6 +155,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         e.printStackTrace();
                     }
                 }
+                //计算RTF
+                Message msg = new Message();
+                msg.obj = "Inference done！\nInference time: " + inferenceTime + " ms"
+                        + "\nRTF: " + 1.00 * inferenceTime * sampleRate / (totalLength * 1000);
+                handler.sendMessage(msg);  //发
             }
         }).start();
 
@@ -282,7 +285,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         CalcMac.init(externalPath);
 
-        handler = new Handler(){
+        handler = new Handler() {
             //消息处理
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
