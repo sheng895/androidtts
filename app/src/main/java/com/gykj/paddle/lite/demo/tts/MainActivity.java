@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final String wavFile = Environment.getExternalStorageDirectory() + File.separator + wavName;
     private final String AMmodelName = "fastspeech2_mix_arm.nb";
     private final String VOCmodelName = "mb_melgan_csmsc_arm.nb";
-
+//    private final String VOCmodelName = "hifigan_csmsc_arm.nb";
     private Map<String, String> phonemap = new HashMap<>();
 
     private Map<String, String> pinyinmap = new HashMap<>();
@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private AudioTrack audioTrack;
     private byte[] audioData;
+    private  Handler handler;
 
 
     @Override
@@ -113,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         new Thread(new Runnable() {
             @Override
             public void run() {
-                String charSplit = "[：；。？！,;?!]";
+                String charSplit = "[：；。？！,;?!]《》";
                 for (int i = 0; i < charSplit.length(); i++) {
                     content = content.replace(charSplit.charAt(i), '，');
                 }
@@ -129,6 +130,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 audioTrack.write(audioData, 0, audioData.length);
                 audioTrack.play();
+                boolean firstPaly=true;
                 for (String str : segmentText) {
                     String codes = CalcMac.getPhoneIds(str);
                     String[] codevioce = codes.split(",");
@@ -140,6 +142,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                     ft[index] = 277;
                     predictor.runSegmentModel(ft);
+                    if(firstPaly){
+                        Message msg = new Message();
+                        msg.obj = "Inference done！\nInference time: " + predictor.inferenceTime() + " ms"
+                                + "\nRTF: " + predictor.inferenceTime() * sampleRate / (predictor.singlewav.length* 1000) ;
+                        handler.sendMessage(msg);  //发
+                        firstPaly=false;
+                    }
                     try {
                         audioData = Utils.segToByte(predictor.singlewav, predictor.maxwav).toByteArray();
                         audioTrack.write(audioData, 0, audioData.length);
@@ -273,6 +282,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         CalcMac.init(externalPath);
 
+        handler = new Handler(){
+            //消息处理
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                //修改控件
+                tvInferenceTime.setText(msg.obj.toString());
+            }
+        };
+
+
 //        String dssss= CalcMac.getPhoneIds("这几天雨水不断，人们恨不得待在家里不出门。");
 
 //        predictor.init(MainActivity.this, modelPath, AMmodelName, VOCmodelName, cpuThreadNum,
@@ -347,8 +366,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btn_stop.setVisibility(View.VISIBLE);
 //        tvInferenceTime.setText("Inference done！\nInference time: " + predictor.inferenceTime() + " ms"
 //                + "\nRTF: " + predictor.inferenceTime() * sampleRate / (predictor.wav.size() * 1000) + "\nAudio saved in " + wavFile);
-                tvInferenceTime.setText("Inference done！\nInference time: " + predictor.inferenceTime() + " ms"
-                + "\nRTF: " + predictor.inferenceTime() * sampleRate / 1000 );
+//                tvInferenceTime.setText("Inference done！\nInference time: " + predictor.inferenceTime() + " ms"
+//                + "\nRTF: " + predictor.inferenceTime() * sampleRate / (predictor.singlewav.length * 1000)  );
 //        try {
 ////            Utils.rawToWave(wavFile, predictor.wav, sampleRate);
 //              audioData= Utils.rawToByte(predictor.wav,predictor.maxwav,sampleRate).toByteArray();

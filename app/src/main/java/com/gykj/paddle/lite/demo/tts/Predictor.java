@@ -100,7 +100,7 @@ public class Predictor {
         }
         Date start = new Date();
         int[] speakid=new int[1];
-        speakid[0]=174;
+        speakid[0]=282;
         sleeptime=0;
         Tensor am_output_handle = getAMOutput(phones, speakid, AMPredictor);
         singlewav = getVOCOutput(am_output_handle, VOCPredictor);
