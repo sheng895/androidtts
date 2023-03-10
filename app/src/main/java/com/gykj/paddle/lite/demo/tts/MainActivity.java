@@ -45,7 +45,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final int RESPONSE_LOAD_MODEL_FAILED = 1;
     public static final int RESPONSE_RUN_MODEL_SUCCESSED = 2;
     public static final int RESPONSE_RUN_MODEL_FAILED = 3;
-    public MediaPlayer mediaPlayer = new MediaPlayer();
     private static final String TAG = Predictor.class.getSimpleName();
     protected ProgressDialog pbLoadModel = null;
     protected ProgressDialog pbRunModel = null;
@@ -76,53 +75,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private Map<String, String> pinyinmap = new HashMap<>();
     private int[][] phones = {};
+    private String content;
 
     private AudioTrack audioTrack;
     private byte[] audioData;
 
-    private final float[][] sentencesToChoose = {
-            // 009901 昨日，这名“伤者”与医生全部被警方依法刑事拘留。
-            {261, 231, 175, 116, 179, 262, 44, 154, 126, 177, 19, 262, 42, 241, 72, 177, 56, 174, 245, 37, 186, 37, 49, 151, 127, 69, 19, 179, 72, 69, 4, 260, 126, 177, 116, 151, 239, 153, 141},
-            // 009902 钱伟长想到上海来办学校是经过深思熟虑的。
-            {174, 83, 213, 39, 20, 260, 89, 40, 30, 177, 22, 71, 9, 153, 8, 37, 17, 260, 251, 260, 99, 179, 177, 116, 151, 125, 70, 233, 177, 51, 176, 108, 177, 184, 153, 242, 40, 45},
-            // 009903 她见我一进门就骂，吃饭时也骂，骂得我抬不起头。
-            {182, 2, 151, 85, 232, 73, 151, 123, 154, 52, 151, 143, 154, 5, 179, 39, 113, 69, 17, 177, 114, 105, 154, 5, 179, 154, 5, 40, 45, 232, 182, 8, 37, 186, 174, 74, 182, 168},
-            // 009904 李述德在离开之前，只说了一句“柱驼杀父亲了”。
-            {153, 74, 177, 186, 40, 42, 261, 10, 153, 73, 152, 7, 262, 113, 174, 83, 179, 262, 115, 177, 230, 153, 45, 73, 151, 242, 180, 262, 186, 182, 231, 177, 2, 69, 186, 174, 124, 153, 45},
-            // 009905 这种车票和保险单捆绑出售属于重复性购买。
-            {262, 44, 262, 163, 39, 41, 173, 99, 71, 42, 37, 28, 260, 84, 40, 14, 179, 152, 220, 37, 21, 39, 183, 177, 170, 179, 177, 185, 240, 39, 162, 69, 186, 260, 128, 70, 170, 154, 9},
-            // 009906 戴佩妮的男友西米露接唱情歌，让她非常开心。
-            {40, 10, 173, 49, 155, 72, 40, 45, 155, 15, 142, 260, 72, 154, 74, 153, 186, 179, 151, 103, 39, 22, 174, 126, 70, 41, 179, 175, 22, 182, 2, 69, 46, 39, 20, 152, 7, 260, 120},
-            // 009907 观大势、谋大局、出大策始终是该院的办院方针。
-            {70, 199, 40, 5, 177, 116, 154, 168, 40, 5, 151, 240, 179, 39, 183, 40, 5, 38, 44, 179, 177, 115, 262, 161, 177, 116, 70, 7, 247, 40, 45, 37, 17, 247, 69, 19, 262, 51},
-            // 009908 他们骑着摩托回家，正好为农忙时的父母帮忙。
-            {182, 2, 154, 55, 174, 73, 262, 45, 154, 157, 182, 230, 71, 212, 151, 77, 180, 262, 59, 71, 29, 214, 155, 162, 154, 20, 177, 114, 40, 45, 69, 186, 154, 185, 37, 19, 154, 20},
-            // 009909 但是因为还没到退休年龄，只能掰着指头捱日子。
-            {40, 17, 177, 116, 120, 214, 71, 8, 154, 47, 40, 30, 182, 214, 260, 140, 155, 83, 153, 126, 180, 262, 115, 155, 57, 37, 7, 262, 45, 262, 115, 182, 171, 8, 175, 116, 261, 112},
-            // 009910 这几天雨水不断，人们恨不得待在家里不出门。
-            {262, 44, 151, 74, 182, 82, 240, 177, 213, 37, 184, 40, 202, 180, 175, 52, 154, 55, 71, 54, 37, 186, 40, 42, 40, 7, 261, 10, 151, 77, 153, 74, 37, 186, 39, 183, 154, 52}
-
-    };
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_play:
-//                if (!mediaPlayer.isPlaying()) {
-//                    mediaPlayer.start();
-//                }
-                if (audioData.length>0) {
-                    this.audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate,
-                            AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT,
-                            audioData.length, AudioTrack.MODE_STATIC);
-                  if(this.audioTrack.getPlayState()==3)
-                  {
-                      this.audioTrack.stop();
-                      this.audioTrack.release();
-                  }
-                    this.audioTrack.write(audioData, 0, audioData.length);
-                    audioTrack.play();
-                }
+                ttsSpeak(content);
+//                this.audioTrack.stop();
+//                this.audioTrack.release();
+
                 break;
             case R.id.btn_pause:
 //                if (mediaPlayer.isPlaying()) {
@@ -142,23 +108,49 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void initMediaPlayer() {
-        try {
-            File file = new File(wavFile);
-            mediaPlayer.reset();
-            // 指定音频文件的路径
-            mediaPlayer.setDataSource(file.getPath());
+    private  void ttsSpeak(String text)
+    {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String charSplit = "[：；。？！,;?!]";
+                for (int i = 0; i < charSplit.length(); i++) {
+                    content = content.replace(charSplit.charAt(i), '，');
+                }
+                String[] segmentText = content.split("，");
+                predictor.isLoaded();
+                audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate,
+                        AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT,
+                        40000, AudioTrack.MODE_STREAM);
+                try {
+                    audioData = Utils.rawToByte(40000, sampleRate).toByteArray();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                audioTrack.write(audioData, 0, audioData.length);
+                audioTrack.play();
+                for (String str : segmentText) {
+                    String codes = CalcMac.getPhoneIds(str);
+                    String[] codevioce = codes.split(",");
+                    int[] ft = new int[codevioce.length + 1];
+                    int index = 0;
+                    for (String s : codevioce) {
+                        ft[index] = Integer.valueOf(s);
+                        index++;
+                    }
+                    ft[index] = 277;
+                    predictor.runSegmentModel(ft);
+                    try {
+                        audioData = Utils.segToByte(predictor.singlewav, predictor.maxwav).toByteArray();
+                        audioTrack.write(audioData, 0, audioData.length);
+                        audioTrack.play();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
 
-//            mediaPlayer .setLooping(true);
-            // 让 MediaPlayer 进入到准备状态
-            mediaPlayer.prepare();
-            // 该方法使得进入应用时就播放音频
-            // mediaPlayer.setOnPreparedListener(this);
-            // prepare async to not block main thread
-            mediaPlayer.prepareAsync();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -169,8 +161,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
         // The MediaPlayer has moved to the Error state, must be reset!
-        mediaPlayer.reset();
-        initMediaPlayer();
         return true;
     }
 
@@ -202,17 +192,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btn_pause.setVisibility(View.INVISIBLE);
         btn_stop.setVisibility(View.INVISIBLE);
 
-//        try {
-//            ConvertPinyin.assetManager = getAssets();
-//            ConvertPinyin.jiebaSegmenter = new JiebaSegmenter();
-//            phonemap = ConvertPinyin.readFileMap("phone_id_map_zh.txt", " ");
-//            pinyinmap = ConvertPinyin.readFileMap("pinyin2phone.text", "\t");
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//        }
-
-
-        // Clear all setting items to avoid app crashing due to the incorrect settings
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.clear();
@@ -285,7 +264,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             StrictMode.setThreadPolicy(policy);
         }
 
-        String externalPath=this.getExternalFilesDir(null).getAbsolutePath();
+        String externalPath = this.getExternalFilesDir(null).getAbsolutePath();
         AssetCopyer.copyAllAssets(this.getApplicationContext(), externalPath);
 //        File file = new File(externalPath);
 //        if(!file.exists()) {
@@ -366,20 +345,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btn_play.setVisibility(View.VISIBLE);
         btn_pause.setVisibility(View.VISIBLE);
         btn_stop.setVisibility(View.VISIBLE);
-        tvInferenceTime.setText("Inference done！\nInference time: " + predictor.inferenceTime() + " ms"
-                + "\nRTF: " + predictor.inferenceTime() * sampleRate / (predictor.wav.length * 1000) + "\nAudio saved in " + wavFile);
-        try {
-//            Utils.rawToWave(wavFile, predictor.wav, sampleRate);
-              audioData= Utils.rawToByte(predictor.wav,predictor.maxwav,sampleRate).toByteArray();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        tvInferenceTime.setText("Inference done！\nInference time: " + predictor.inferenceTime() + " ms"
+//                + "\nRTF: " + predictor.inferenceTime() * sampleRate / (predictor.wav.size() * 1000) + "\nAudio saved in " + wavFile);
+                tvInferenceTime.setText("Inference done！\nInference time: " + predictor.inferenceTime() + " ms"
+                + "\nRTF: " + predictor.inferenceTime() * sampleRate / 1000 );
+//        try {
+////            Utils.rawToWave(wavFile, predictor.wav, sampleRate);
+//              audioData= Utils.rawToByte(predictor.wav,predictor.maxwav,sampleRate).toByteArray();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         if (ContextCompat.checkSelfPermission(MainActivity.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-        } else {
-            // 初始化 MediaPlayer
-            initMediaPlayer();
         }
     }
 
@@ -428,10 +406,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         worker.quit();
         super.onDestroy();
-        if (mediaPlayer != null) {
-            mediaPlayer.stop();
-            mediaPlayer.release();
-        }
     }
 
     private boolean requestAllPermissions() {
@@ -451,40 +425,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         if (position > 0) {
 ////            phones = sentencesToChoose[position - 1];
-            String content = ((TextView) view).getText().toString();
-////            phones=ConvertPinyin.getPinyinPhone(content,phonemap,pinyinmap);
-//            String data = GetData.getResult(content);
-//            try {
-//                JSONObject jsonobj = new JSONObject(data);
-//                String codes = jsonobj.getString("data");
-//                String[] codevioce = codes.split(",");
-//                float[] ft = new float[codevioce.length];
-//                int index = 0;
-//                for (String s : codevioce) {
-//                    ft[index] = Float.valueOf(s);
-//                    index++;
-//                }
-//                float[][] codePhones = {ft};
-//                phones = codePhones;
-//            } catch (Exception ex) {
-//                ex.printStackTrace();
-//            }
-           // float[][] codePhones = {{115,74,245,156,150,101,277,340,275,202,54,25,55,8,58,380,352,249,152,247,101,275,199,277,112,161,150,102,277,154,151,274,197,277,340,248,131,247,77,115,282,154,275,264,275,199,277,339,354,114,325,148,132,245,189,149,342,246,119,277,277,277,8,46,22,277,23,8,277,56,54,55,37,47,277,20,55,40,69,277,3,55,277,54,6,56,36,47,277,20,18,277,249,153,380,190,272,231,275,317,247,86,380,212,150,117,277,277,68,64,277,58,31,43,277,23,8,277,12,58,8,45,277,67,12,58,27,277,58,64,277,58,31,43,277,23,8,277}};
-
-            String codes = CalcMac.getPhoneIds(content);
-
-            String[] codevioce = codes.split(",");
-            int[] ft = new int[codevioce.length];
-            int index = 0;
-            for (String s : codevioce) {
-                ft[index] = Integer.valueOf(s);
-                index++;
-            }
-            int[][] codePhones = {ft};
-//            float[][] codePhones = {{115,74,245,156,150,101,277,340,275,202,54,25,55,8,58,380,352,249,152,247,101,275,199,277,112,161,150,102,277,154,151,274,197,277,340,248,131,247,77,115,282,154,275,264,275,199,277,339,354,114,325,148,132,245,189,149,342,246,119,277,8,46,22,23,8,56,54,55,37,47,20,55,40,69,3,55,54,6,56,36,47,20,18,277,249,153,380,190,272,231,275,317,247,86,380,212,150,117,277,68,64,58,31,43,23,8,12,58,8,45,67,12,58,27,58,64,58,31,43,23,8,34,6,44,8,43,56,39,277}};
-            phones = codePhones;
-            predictor.isLoaded();
-            predictor.runModel(phones);
+            content = ((TextView) view).getText().toString();
             runModel();
         }
 

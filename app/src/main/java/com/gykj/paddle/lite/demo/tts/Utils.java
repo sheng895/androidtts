@@ -71,11 +71,11 @@ public class Utils {
         return Environment.getExternalStorageDirectory().getAbsolutePath();
     }
 
-    public static ByteArrayOutputStream rawToByte(float[] data, float mmax,int samplerate) throws IOException {
+    public static ByteArrayOutputStream rawToByte(int datalength, int samplerate) throws IOException {
         // creating the empty wav file.
 //        File waveFile = new File(file);
 //        waveFile.createNewFile();
-        ByteArrayOutputStream output = new ByteArrayOutputStream(100+data.length);
+        ByteArrayOutputStream output = new ByteArrayOutputStream(100);
         //following block is converting raw to wav.
 //        DataOutputStream output = null;
         try {
@@ -84,7 +84,7 @@ public class Utils {
             // chunk id
             writeString(output, "RIFF");
             // chunk size
-            writeInt(output, 36 + data.length * 2);
+            writeInt(output, 36 + datalength * 2);
             // format
             writeString(output, "WAVE");
             // subchunk 1 id
@@ -106,11 +106,11 @@ public class Utils {
             // subchunk 2 id
             writeString(output, "data");
             // subchunk 2 size
-            writeInt(output, data.length * 2);
+            writeInt(output, datalength * 2);
 
-            for (int i = 0; i < data.length; i++) {
-                writeShort(output, (short) (data[i] * (32767 / mmax)));
-            }
+//            for (int i = 0; i < data.length; i++) {
+//                writeShort(output, (short) (data[i] * (32767 / mmax)));
+//            }
 //            short[] short_data = FloatArray2ShortArray(data,mmax);
 //            for (int i = 0; i < short_data.length; i++) {
 //                writeShort(output, short_data[i]);
@@ -150,5 +150,30 @@ public class Utils {
         }
         return ret;
     }
+
+
+
+    public static ByteArrayOutputStream segToByte(float[] data, float mmax) throws IOException {
+        // creating the empty wav file.
+//        File waveFile = new File(file);
+//        waveFile.createNewFile();
+        ByteArrayOutputStream output = new ByteArrayOutputStream(data.length+100);
+        //following block is converting raw to wav.
+//        DataOutputStream output = null;
+        try {
+
+
+            for (int i = 0; i < data.length; i++) {
+                writeShort(output, (short) (data[i] * (32767 / mmax)));
+            }
+
+        } finally {
+            if (output != null) {
+                output.close();
+            }
+        }
+        return output;
+    }
+
 
 }

@@ -23,8 +23,10 @@ public class Predictor {
     protected PaddlePredictor AMPredictor = null;
     protected PaddlePredictor VOCPredictor = null;
     protected float inferenceTime = 0;
-    protected float[] wav;
-    protected float maxwav= (float) 0.01;
+    protected List<float[]> wav;
+
+    protected float[] singlewav;
+    protected float maxwav=(float) 0.01;
     Object obj=new Object();
     int sleeptime=0;
 
@@ -92,48 +94,70 @@ public class Predictor {
         modelPath = "";
     }
 
-    public boolean runModel(int[][] codephones) {
+    public boolean runSegmentModel(int[] phones) {
         if (!isLoaded()) {
             return false;
         }
         Date start = new Date();
         int[] speakid=new int[1];
         speakid[0]=174;
-        int count=0;
-        List<float[]> list=new ArrayList<>();
         sleeptime=0;
-        for (int[] phones : codephones)
-        {
-
-            Tensor am_output_handle = getAMOutput(phones, speakid, AMPredictor);
-            float[] segementwav = getVOCOutput(am_output_handle, VOCPredictor);
-            list.add(segementwav);
-            count+=segementwav.length;
-
-
-        }
-        wav=new float[count];
-        int index=0;
+        Tensor am_output_handle = getAMOutput(phones, speakid, AMPredictor);
+        singlewav = getVOCOutput(am_output_handle, VOCPredictor);
         float value=0;
-        for(float[] ft : list){
-            for (int i=0;i<ft.length;i++)
-            {
-                value=ft[i];
-                if (value< 0) {
-                    value = -1 * value;
-                }
-                if (value > maxwav) {
-                    maxwav = value;
-                }
-                wav[index]=ft[i];
-                index++;
+        for (int i=0;i<singlewav.length;i++)
+        {
+            value=singlewav[i];
+            if (value< 0) {
+                value = -1 * value;
             }
-
+            if (value > maxwav) {
+                maxwav = value;
+            }
         }
         Date end = new Date();
         inferenceTime = (end.getTime() - start.getTime());
         return true;
     }
+
+//    public boolean runModel(int[][] codephones) {
+//        if (!isLoaded()) {
+//            return false;
+//        }
+//        Date start = new Date();
+//        int[] speakid=new int[1];
+//        speakid[0]=174;
+//        int count=0;
+//        List<float[]> list=new ArrayList<>();
+//        sleeptime=0;
+//        for (int[] phones : codephones)
+//        {
+//            Tensor am_output_handle = getAMOutput(phones, speakid, AMPredictor);
+//            float[] segementwav = getVOCOutput(am_output_handle, VOCPredictor);
+//            list.add(segementwav);
+//            count+=segementwav.length;
+//        }
+//        wav=new ArrayList<>();
+//        int index=0;
+//
+//        for(float[] ft : list){
+//            float value=0;
+//            for (int i=0;i<ft.length;i++)
+//            {
+//                value=ft[i];
+//                if (value< 0) {
+//                    value = -1 * value;
+//                }
+//                if (value > maxwav) {
+//                    maxwav = value;
+//                }
+//            }
+//            wav.add(ft);
+//        }
+//        Date end = new Date();
+//        inferenceTime = (end.getTime() - start.getTime());
+//        return true;
+//    }
 
     public Tensor getAMOutput(int[] phones,int[] speakid, PaddlePredictor am_predictor) {
         synchronized (obj) {
