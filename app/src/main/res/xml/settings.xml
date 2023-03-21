@@ -35,5 +35,13 @@
             android:negativeButtonText="@null"
             android:positiveButtonText="@null"
             android:title="CPU Power Mode" />
+        <ListPreference
+            android:defaultValue="174"
+            android:entries="@array/speack_id_num_entries"
+            android:entryValues="@array/speack_id_num_values"
+            android:key="@string/SPEACK_ID_NUM_KEY"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:title="SPEAK ID" />
     </PreferenceCategory>
 </PreferenceScreen>

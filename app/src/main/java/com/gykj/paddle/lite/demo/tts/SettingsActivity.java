@@ -7,7 +7,7 @@ import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.support.v7.app.ActionBar;
 
-import com.gykj.paddle.lite.demo.tts.R;
+import com.gykj.voicetts.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,9 +19,13 @@ public class SettingsActivity extends AppCompatPreferenceActivity implements Sha
     ListPreference lpCPUThreadNum = null;
     ListPreference lpCPUPowerMode = null;
 
+    ListPreference lpSPEAKIds = null;
+
     List<String> preInstalledModelPaths = null;
     List<String> preInstalledCPUThreadNums = null;
     List<String> preInstalledCPUPowerModes = null;
+
+    List<String> preInstalledSpeackIds = null;
 
 
     @Override
@@ -37,9 +41,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity implements Sha
         preInstalledModelPaths = new ArrayList<String>();
         preInstalledCPUThreadNums = new ArrayList<String>();
         preInstalledCPUPowerModes = new ArrayList<String>();
+        preInstalledSpeackIds = new ArrayList<String>();
         preInstalledModelPaths.add(getString(R.string.MODEL_PATH_DEFAULT));
         preInstalledCPUThreadNums.add(getString(R.string.CPU_THREAD_NUM_DEFAULT));
         preInstalledCPUPowerModes.add(getString(R.string.CPU_POWER_MODE_DEFAULT));
+        preInstalledSpeackIds.add(getString(R.string.SPEACK_ID_NUM_KEY));
 
 
         // Setup UI components
@@ -52,6 +58,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity implements Sha
         lpChoosePreInstalledModel.setEntryValues(preInstalledModelPaths.toArray(new String[preInstalledModelPaths.size()]));
         lpCPUThreadNum = (ListPreference) findPreference(getString(R.string.CPU_THREAD_NUM_KEY));
         lpCPUPowerMode = (ListPreference) findPreference(getString(R.string.CPU_POWER_MODE_KEY));
+        lpSPEAKIds = (ListPreference) findPreference(getString(R.string.SPEACK_ID_NUM_KEY));
         cbEnableCustomSettings = (CheckBoxPreference) findPreference(getString(R.string.ENABLE_CUSTOM_SETTINGS_KEY));
         etModelPath = (EditTextPreference) findPreference(getString(R.string.MODEL_PATH_KEY));
         etModelPath.setTitle("Model Path (SDCard: " + Utils.getSDCardDirectory() + ")");
@@ -68,6 +75,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity implements Sha
                 editor.putString(getString(R.string.MODEL_PATH_KEY), preInstalledModelPaths.get(modelIdx));
                 editor.putString(getString(R.string.CPU_THREAD_NUM_KEY), preInstalledCPUThreadNums.get(modelIdx));
                 editor.putString(getString(R.string.CPU_POWER_MODE_KEY), preInstalledCPUPowerModes.get(modelIdx));
+                editor.putString(getString(R.string.SPEACK_ID_NUM_KEY), preInstalledSpeackIds.get(modelIdx));
                 editor.commit();
             }
             lpChoosePreInstalledModel.setSummary(modelPath);
@@ -76,9 +84,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity implements Sha
         etModelPath.setEnabled(enableCustomSettings);
         lpCPUThreadNum.setEnabled(enableCustomSettings);
         lpCPUPowerMode.setEnabled(enableCustomSettings);
+        lpSPEAKIds.setEnabled(enableCustomSettings);
         modelPath = sharedPreferences.getString(getString(R.string.MODEL_PATH_KEY), getString(R.string.MODEL_PATH_DEFAULT));
         String cpuThreadNum = sharedPreferences.getString(getString(R.string.CPU_THREAD_NUM_KEY), getString(R.string.CPU_THREAD_NUM_DEFAULT));
         String cpuPowerMode = sharedPreferences.getString(getString(R.string.CPU_POWER_MODE_KEY), getString(R.string.CPU_POWER_MODE_DEFAULT));
+        String speakId = sharedPreferences.getString(getString(R.string.SPEACK_ID_NUM_KEY), getString(R.string.CPU_POWER_MODE_DEFAULT));
 
         etModelPath.setSummary(modelPath);
         etModelPath.setText(modelPath);
@@ -86,6 +96,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity implements Sha
         lpCPUThreadNum.setSummary(cpuThreadNum);
         lpCPUPowerMode.setValue(cpuPowerMode);
         lpCPUPowerMode.setSummary(cpuPowerMode);
+        lpSPEAKIds.setValue(speakId);
     }
 
     @Override

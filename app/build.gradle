@@ -14,7 +14,7 @@ android {
 //        ndk{
 //            moduleName "fonttextclient"
 //            ldLibs "log", "z", "m"  //添加依赖库文件，因为有log打印等
-//            abiFilters  "arm64-v8a"
+//            abiFilters  "x86_64"
 //        }
     }
 
@@ -29,9 +29,18 @@ android {
 //            path="src/main/jni/Android.mk"
 //        }
 //    }
-    sourceSets.main {
-        jni.srcDirs = []
-        jniLibs.srcDirs = ['src/main/jniLibs']
+//    sourceSets.main {
+//        jni.srcDirs = []
+//        jniLibs.srcDirs = ['src/main/jniLibs','libs']
+//    }
+
+    packagingOptions {
+
+        pickFirst 'libs/arm64-v8a/libc++_shared.so'//这个放在第一位
+
+        pickFirst 'libs/arm64-v8a/libpaddle_lite_jni.so'
+
+
     }
 }
 
@@ -43,11 +52,10 @@ dependencies {
     implementation 'com.google.guava:guava:18.0'
     implementation 'org.slf4j:slf4j-api:1.7.21'
     implementation 'com.huaban:jieba-analysis:1.0.2'
+    implementation project(path: ':voicetts')
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    implementation files('libs/PaddlePredictor.jar')
-    implementation files('libs/pinyin4j-2.5.0.jar')
 }
 
 //def paddleLiteLibs = 'https://paddlespeech.bj.bcebos.com/demos/TTSAndroid/paddle_lite_libs_68b66fd3.tar.gz'

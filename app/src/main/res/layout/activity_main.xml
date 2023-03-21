@@ -9,18 +9,30 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <ImageView
-            android:id="@+id/logo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+<!--        <ImageView-->
+<!--            android:id="@+id/logo"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginTop="20dp"-->
+<!--            android:src="@drawable/paddlespeech_logo" />-->
+
+        <EditText
+            android:id="@+id/content_text"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
             android:layout_marginTop="20dp"
-            android:src="@drawable/paddlespeech_logo" />
+            android:ems="10"
+            android:hint="请输入播放内容"
+            android:maxLines="30"
+            android:textSize="12sp"
+            android:inputType="textCapSentences|textMultiLine" />
+
 
         <LinearLayout
             android:id="@+id/v_input_info"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/logo"
+            android:layout_below="@+id/content_text"
             android:layout_alignParentTop="true"
             android:layout_marginTop="120dp"
             android:orientation="vertical">
